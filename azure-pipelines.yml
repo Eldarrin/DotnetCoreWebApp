@@ -10,7 +10,7 @@ resources:
 
 variables:
   tag: '$(Build.BuildId)'
-  imageRepository: 'pocnetcore'
+  imageRepository: 'ustpoc-docker-local.jfrog.io/pocnetcore'
   dockerFilePath: '**/Dockerfile'
   vmImageName: 'ubuntu-latest'
 
