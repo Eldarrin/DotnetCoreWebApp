@@ -37,11 +37,16 @@ stages:
       - job: Check
         displayName: Sonar Check
         steps:
-          - task: NuGetCommand@2
+          - task: ArtifactoryNuGet@1
             inputs:
               command: 'restore'
-              restoreSolution: '**/*.sln'
-              feedsToUse: 'select'
+              artifactoryService: 'jFrog'
+              targetResolveRepo: 'nuget'
+              solutionPath: '**/*.sln'
+              collectBuildInfo: true
+              buildName: '$(Build.DefinitionName)'
+              buildNumber: '$(Build.BuildNumber)'
+              includeEnvVars: true
 
           - task: MSBuild@1
             inputs:
