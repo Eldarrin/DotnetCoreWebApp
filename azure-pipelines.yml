@@ -37,6 +37,9 @@ stages:
       - job: Check
         displayName: Sonar Check
         steps:
+          - task: MSBuild@1
+            inputs:
+              solution: '**/*.sln'
           - task: SonarCloudPrepare@1
             inputs:
               SonarCloud: 'SonarCloud'
