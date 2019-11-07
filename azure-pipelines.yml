@@ -34,7 +34,7 @@ stages:
     displayName: Check Stage
     dependsOn: Import
     pool:
-      vmImageName: 'windows-latest'
+      vmImage: 'windows-latest'
     jobs:
       - job: Check
         displayName: Sonar Check
