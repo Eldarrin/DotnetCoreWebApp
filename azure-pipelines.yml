@@ -10,21 +10,85 @@ resources:
 
 variables:
   tag: '$(Build.BuildId)'
+  imageRepository: 'pocnetcore'
+  dockerFilePath: '**/Dockerfile'
+  vmImageName: 'ubuntu-latest'
+
+pool:
+  vmImage: $(vmImageName)
 
 stages:
-- stage: Build
-  displayName: Build image
-  jobs:  
-  - job: Build
-    displayName: Build
-    pool:
-      vmImage: 'ubuntu-latest'
-    steps:
-    - task: Docker@2
-      displayName: Build an image
-      inputs:
-        command: build
-        repository: 'pocnetcore'
-        dockerfile: '**/Dockerfile'
-        tags: |
-          $(tag)
+  - stage: Import
+    displayName: Import Requirements
+    jobs:
+      - job: Import
+        displayName: jFrog Import
+        steps:
+          - task: ArtifactoryToolsInstaller@1
+            displayName: Install jFrog Client from Artifactory
+            inputs:
+              artifactoryService: 'jFrog'
+              cliInstallationRepo: 'jfrog-cli'
+
+  - stage: Build
+    displayName: Build Stage
+    dependsOn: Import
+    jobs:
+      - job: Build
+        displayName: Build
+        steps:
+          - task: ArtifactoryDocker@1
+            inputs:
+              command: 'pull'
+              artifactoryService: 'jFrog'
+              sourceRepo: 'docker'
+              imageName: 'ustpoc-docker.jfrog.io/microsoft/dotnet:2.2-sdk'
+
+          - task: Docker@2
+            inputs:
+              repository: $(imageRepository)
+              command: 'build'
+              Dockerfile: '$(dockerfilePath)'
+              tags: '$(tag)'
+
+          - task: UniversalPackages@0
+            inputs:
+              command: 'download'
+              downloadDirectory: '$(System.DefaultWorkingDirectory)'
+              feedsToUse: 'internal'
+              vstsFeed: 'd09b6095-5d34-406d-8b60-54c555945e9a'
+              vstsFeedPackage: '819e5519-79bf-4056-8920-f8c9bd51212c'
+              vstsPackageVersion: '19.3.311'
+
+          - task: CmdLine@2
+            inputs:
+              script: |
+                sudo mv $(System.DefaultWorkingDirectory)/twistcli /usr/bin/twistcli
+                sudo chmod +x /usr/bin/twistcli
+
+          - task: twistcli-scan@1
+            inputs:
+              scanType: 'images'
+              twistlockService: 'twistlock_cli'
+              vulnerabilityThreshold: 'critical'
+              onlyFixed: false
+              gracePeriod: '0'
+              complianceThreshold: 'critical'
+              artifact: '$(imageRepository):$(tag)'
+
+          - task: ArtifactoryDocker@1
+            inputs:
+              command: 'push'
+              artifactoryService: 'jFrog'
+              targetRepo: 'docker-local'
+              imageName: '$(imageRepository):$(tag)'
+              collectBuildInfo: true
+              buildName: '$(Build.DefinitionName)'
+              buildNumber: '$(Build.BuildNumber)'
+              includeEnvVars: true
+
+          - task: ArtifactoryPublishBuildInfo@1
+            inputs:
+              artifactoryService: 'jFrog'
+              buildName: '$(Build.DefinitionName)'
+              buildNumber: '$(Build.BuildNumber)'
