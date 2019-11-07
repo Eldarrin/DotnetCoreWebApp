@@ -30,6 +30,30 @@ stages:
               artifactoryService: 'jFrog'
               cliInstallationRepo: 'jfrog-cli'
 
+  - stage: Check
+    displayName: Check Stage
+    jobs:
+      - job: Check
+        displayName: Sonar Check
+        steps:
+          - task: SonarCloudPrepare@1
+            inputs:
+              SonarCloud: 'SonarCloud'
+              organization: 'andywardust'
+              scannerMode: 'MSBuild'
+              projectKey: 'AndyWardUST_DotnetCoreWebApp'
+              projectName: 'DotnetCoreWebApp'
+              extraProperties: |
+                # Additional properties that will be passed to the scanner, 
+                # Put one key=value per line, example:
+                sonar.organization=andywardust
+
+          - task: SonarCloudAnalyze@1
+
+          - task: SonarCloudPublish@1
+            inputs:
+              pollingTimeoutSec: '300'
+
   - stage: Build
     displayName: Build Stage
     dependsOn: Import
