@@ -18,10 +18,8 @@ pool:
   vmImage: $(vmImageName)
 
 stages:
-
   - stage: Build
     displayName: Build Stage
-    dependsOn: Check
     jobs:
       - job: Build
         displayName: Build
