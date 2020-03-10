@@ -36,7 +36,7 @@ stages:
               extraProperties: |
                 # Additional properties that will be passed to the scanner,
                 # Put one key=value per line, example:
-                sonar.organization=Eldarrin
+                sonar.organization=eldarrin-github
 
           - task: NuGetCommand@2
             inputs:
