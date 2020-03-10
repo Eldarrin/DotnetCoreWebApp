@@ -73,3 +73,8 @@ stages:
               command: 'build'
               Dockerfile: '$(dockerfilePath)'
               tags: '$(tag)'
+
+          - script: |
+              curl -LJO https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar
+              java -jar wss-unified-agent.jar
+            displayName: 'whitesource check'
