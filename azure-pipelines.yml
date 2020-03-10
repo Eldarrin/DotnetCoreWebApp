@@ -20,7 +20,6 @@ pool:
 stages:
   - stage: Check
     displayName: Check Stage
-    dependsOn: Import
     pool:
       vmImage: 'windows-latest'
     jobs:
