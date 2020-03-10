@@ -1,25 +1,57 @@
 # Docker
-# Build a Docker image 
+# Build a Docker image
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
 trigger:
-- master
+  - master
 
 resources:
-- repo: self
+  - repo: self
 
 variables:
   tag: '$(Build.BuildId)'
   imageRepository: 'pocnetcore'
   dockerFilePath: '**/Dockerfile'
-  vmImageName: 'windows-latest'
+  vmImageName: 'ubuntu-latest'
 
 pool:
   vmImage: $(vmImageName)
 
 stages:
+  - stage: Check
+    displayName: Check Stage
+    dependsOn: Import
+    pool:
+      vmImage: 'windows-latest'
+    jobs:
+      - job: Check
+        displayName: Sonar Check
+        steps:
+          - task: SonarCloudPrepare@1
+            inputs:
+              SonarCloud: 'SonarCloud'
+              organization: 'Eldarrin'
+              scannerMode: 'MSBuild'
+              projectKey: 'Eldarrin_DotnetCoreWebApp'
+              projectName: 'DotnetCoreWebApp'
+              extraProperties: |
+                # Additional properties that will be passed to the scanner,
+                # Put one key=value per line, example:
+                sonar.organization=eldarrin-github
+
+          - task: MSBuild@1
+            inputs:
+              solution: '**/*.sln'
+
+          - task: SonarCloudAnalyze@1
+
+          - task: SonarCloudPublish@1
+            inputs:
+              pollingTimeoutSec: '300'
+
   - stage: Build
     displayName: Build Stage
+    dependsOn: Check
     jobs:
       - job: Build
         displayName: Build
@@ -30,4 +62,3 @@ stages:
               command: 'build'
               Dockerfile: '$(dockerfilePath)'
               tags: '$(tag)'
-
