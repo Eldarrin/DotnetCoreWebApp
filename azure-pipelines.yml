@@ -29,14 +29,14 @@ stages:
           - task: SonarCloudPrepare@1
             inputs:
               SonarCloud: 'SonarCloud'
-              organization: 'Eldarrin'
+              organization: 'eldarrin-github'
               scannerMode: 'MSBuild'
               projectKey: 'Eldarrin_DotnetCoreWebApp'
               projectName: 'DotnetCoreWebApp'
               extraProperties: |
                 # Additional properties that will be passed to the scanner,
                 # Put one key=value per line, example:
-                sonar.organization=eldarrin-github
+                sonar.organization=Eldarrin
 
           - task: MSBuild@1
             inputs:
